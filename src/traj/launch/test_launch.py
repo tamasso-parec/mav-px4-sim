@@ -10,12 +10,7 @@ def generate_launch_description():
     # bash_script_path = os.path.join(package_dir, 'scripts', 'TerminatorScript.sh')
     return LaunchDescription([
         # ExecuteProcess(cmd=['bash', bash_script_path], output='screen'),
-        # Node(
-        #     package='px4_offboard',
-        #     namespace='px4_offboard',
-        #     executable='visualizer',
-        #     name='visualizer'
-        # ),
+        
         Node(
             package='traj',
             namespace='traj',
@@ -30,12 +25,27 @@ def generate_launch_description():
             name='arm_takeoff',
             # prefix='gnome-terminal --'
         ),
+        Node(
+            package='traj',
+            namespace='traj',
+            executable='visualizer',
+            name='visualizer',
+            prefix='gnome-terminal --tab --',
+        ),
+        Node(
+            package='rviz2',
+            namespace='',
+            executable='rviz2',
+            name='rviz2',
+            prefix='gnome-terminal --tab --',
+            arguments=['-d', [os.path.join(package_dir, 'visualize.rviz')]]
+        ),
         # Node(
-        #     package='px4_offboard',
-        #     namespace='px4_offboard',
-        #     executable='control',
-        #     name='control',
-        #     prefix='gnome-terminal --',
+        #     package='traj',
+        #     namespace='traj',
+        #     executable='offboard_control',
+        #     name='offboard_control',
+        #     prefix='gnome-terminal --tab --',
         # ),
         # Node(
         #     package='px4_offboard',

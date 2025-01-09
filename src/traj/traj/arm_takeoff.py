@@ -15,6 +15,7 @@ from px4_msgs.msg import TrajectorySetpoint
 from px4_msgs.msg import VehicleStatus
 from px4_msgs.msg import VehicleAttitude
 from px4_msgs.msg import VehicleCommand
+from px4_msgs.msg import VehicleLocalPosition
 
 from geometry_msgs.msg import Twist, Vector3
 
@@ -39,6 +40,13 @@ class ArmPublisher(Node):
             self.vehicle_status_callback,
             self.qos_profile)
         
+        #Create subscriptions
+        self.local_pos_sub = self.create_subscription(
+            VehicleLocalPosition,
+            '/fmu/out/vehicle_local_position',
+            self.vehicle_local_position_callback,
+            self.qos_profile)
+        
         self.vehicle_command_publisher_ = self.create_publisher(VehicleCommand, "/fmu/in/vehicle_command", 10)
 
         #creates callback function for the arm timer
@@ -48,6 +56,9 @@ class ArmPublisher(Node):
         self.wait_count = 0
         self.takeoff = False
         self.armed = False
+
+        self.lowest_altitude = 5.0
+        self.altitude = 0.0
 
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arm_state = VehicleStatus.ARMING_STATE_ARMED
@@ -69,15 +80,15 @@ class ArmPublisher(Node):
         self.vehicle_command_publisher_.publish(msg)
     
     def arm(self):
-        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, param1 = 1.0,  param7=2.0)
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0)
         self.get_logger().info("Arm command sent")
         self.armed = True
     
     def take_off(self):
-        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1 = 1.0, param7=2.0) # param7 is altitude in meters
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1 = 1.0, param7=self.lowest_altitude) # param7 is altitude in meters
         self.get_logger().info("Takeoff command send")
         
-        self.takeoff = True
+        # self.takeoff = True
 
 
     #receives and sets vehicle status values 
@@ -96,25 +107,25 @@ class ArmPublisher(Node):
         elif self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF: 
             self.take_off()
 
-        # if self.armed == False and self.wait_count > 10:
-        #     self.take_off()
-        #     self.arm()
-        #     self.get_logger().info("Arming")
-        
-        # elif (self.armed == True and self.takeoff == False):
-        #     # self.arm()
-        #     self.take_off()
-        # elif (self.armed == True and self.takeoff == True):
-        #     self.arm()
-            
-        
-        # if self.armed == True and self.takeoff == True:
-        #     self.get_logger().info("Armed and Takeoff")
-        #     self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_DO_SET_MODE, 1., 6.)
+        # if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF and self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.altitude > self.lowest_altitude: 
+        if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF and self.arm_state == VehicleStatus.ARMING_STATE_ARMED: 
+            self.takeoff = True
 
+        elif self.takeoff == True and self.armed == True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER :
+            self.get_logger().info("Takeoff complete, stopping node")
+            sys.exit()
+            
+
+        
         self.wait_count += 1
 
-    # def arm_timer_callback(self):
+    #receives and sets vehicle status values 
+    def vehicle_local_position_callback(self, msg):
+
+
+        self.altitude = -msg.z
+        # self.get_logger().info(f"Altitude: {msg.z}")
+
 
 
 

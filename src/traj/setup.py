@@ -12,6 +12,8 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + 'visualize.rviz']),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name), glob('launch/*launch.[pxy][yma]*')),
     ],
@@ -26,6 +28,8 @@ setup(
         'console_scripts': [
             'processes = traj.processes:main',
             'arm_takeoff = traj.arm_takeoff:main',
+            'offboard_control = traj.offboard_control:main',
+            'visualizer = traj.visualizer:main',
         ],
     },
 )
