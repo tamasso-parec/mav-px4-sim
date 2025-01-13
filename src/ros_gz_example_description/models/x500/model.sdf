@@ -68,5 +68,7 @@
       <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
       <motorType>velocity</motorType>
     </plugin>
+
+    
   </model>
 </sdf>
