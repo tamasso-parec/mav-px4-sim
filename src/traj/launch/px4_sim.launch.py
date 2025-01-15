@@ -16,7 +16,8 @@ from launch_ros.actions import Node
 def generate_launch_description():
 
 	airframe_launch_arg = DeclareLaunchArgument(
-		'airframe', default_value='gz_x500_mono_cam'
+		'airframe', default_value='gz_x500_depth'
+		# 'airframe', default_value='gz_x500_mono_cam'
 	)
   
 	ddsport_launch_arg = DeclareLaunchArgument(
@@ -27,7 +28,8 @@ def generate_launch_description():
 
 	pkg_project_description = get_package_share_directory('ros_gz_example_description')
 	pkg_traj = get_package_share_directory('traj')
-	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_mono_cam', 'model.sdf')
+	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_mono_cam', 'model.sdf')
+	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_depth', 'model.sdf')
 	with open(sdf_file, 'r') as infp:
 		robot_desc = infp.read()
 
