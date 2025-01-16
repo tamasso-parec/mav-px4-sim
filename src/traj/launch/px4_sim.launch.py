@@ -17,6 +17,7 @@ def generate_launch_description():
 
 	airframe_launch_arg = DeclareLaunchArgument(
 		'airframe', default_value='gz_x500_depth'
+		# 'airframe', default_value='gz_x500_base'
 		# 'airframe', default_value='gz_x500_mono_cam'
 	)
   
@@ -30,6 +31,7 @@ def generate_launch_description():
 	pkg_traj = get_package_share_directory('traj')
 	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_mono_cam', 'model.sdf')
 	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_depth', 'model.sdf')
+	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_base', 'model.sdf')
 	with open(sdf_file, 'r') as infp:
 		robot_desc = infp.read()
 
@@ -95,6 +97,13 @@ def generate_launch_description():
 		cwd=os.getcwd(),
 		output='screen'
 	)
+	map_frame_node = Node(
+		package='tf2_ros',
+		executable='static_transform_publisher',
+		name='map_frame_publisher',
+		arguments=['0', '0', '0', '0', '0', '0', 'world', 'map'],
+		output='screen'
+	)
 
 	visualizer_node = Node(
             package='traj',
@@ -124,6 +133,7 @@ def generate_launch_description():
 	px4_sim_cmd,
 	QGC_cmd, 
 	ros_gz_bridge, 
+	map_frame_node,
 	visualizer_node,
 	rviz2_node
 	]

@@ -10,3 +10,6 @@
 [submodule "src/optimizer/gauss_splat_plan"]
 	path = src/optimizer/gauss_splat_plan
 	url = git@github.com:idra-lab/gauss_splat_plan.git
+[submodule "src/realsense-ros"]
+	path = src/realsense-ros
+	url = git@github.com:IntelRealSense/realsense-ros.git
