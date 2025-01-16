@@ -66,6 +66,7 @@ def vector2PoseMsg(frame_id, position, attitude):
     pose_msg.pose.position.z = position[2]
     return pose_msg
 
+# TODO: Add a tf publisher so that the pointcloud can be made to work
 class PX4Visualizer(Node):
     def __init__(self):
         super().__init__("visualizer")
