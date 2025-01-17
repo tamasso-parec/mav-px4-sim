@@ -33,6 +33,7 @@ setup(
             'arm_takeoff = traj.arm_takeoff:main',
             'offboard_control = traj.offboard_control:main',
             'visualizer = traj.visualizer:main',
+            'px4_tf = traj.px4_transform_pub:main',
         ],
     },
 )

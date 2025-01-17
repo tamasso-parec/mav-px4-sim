@@ -116,9 +116,9 @@ class PX4Visualizer(Node):
             Path, "/px4_visualizer/setpoint_path", 10
         )
 
-        self.pointcloud_pub = self.create_publisher(
-                PointCloud2, "/px4_visualizer/pointcloud", 5
-            )
+        # self.pointcloud_pub = self.create_publisher(
+        #         PointCloud2, "/px4_visualizer/pointcloud", 5
+        #     )
 
         self.vehicle_attitude = np.array([1.0, 0.0, 0.0, 0.0])
         self.vehicle_local_position = np.array([0.0, 0.0, 0.0])
@@ -231,41 +231,42 @@ class PX4Visualizer(Node):
         self.vehicle_vel_pub.publish(velocity_msg)
 
     def pointcloud_callback(self, msg):
+        pass
 
         # Convert quaternion to rotation matrix
-        rotation = R.from_quat(self.vehicle_attitude, scalar_first=True)
-        rotation_matrix = rotation.as_matrix()
+        # rotation = R.from_quat(self.vehicle_attitude, scalar_first=True)
+        # rotation_matrix = rotation.as_matrix()
 
         
         
-        points = pcl2.read_points(msg)
-        point_fields = [
-            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
-        ]
-        msg.header.frame_id = "map"
-        # msg.header.frame_id = "x500_depth_0/OakD-Lite/base_link/StereoOV7251"
+        # points = pcl2.read_points(msg)
+        # point_fields = [
+        #     PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+        #     PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+        #     PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+        # ]
+        # msg.header.frame_id = "map"
+        # # msg.header.frame_id = "x500_depth_0/OakD-Lite/base_link/StereoOV7251"
 
-        point_list = []
+        # point_list = []
        
-        # self.get_logger().info(f"Points: {points}")
+        # # self.get_logger().info(f"Points: {points}")
 
-        for point in points:
-            pp = np.array([point['x'], point['y'], point['z']], dtype=np.float32)
-            # self.get_logger().info(f"Point: {point}")
-            if not (np.isnan(pp).any() or np.isinf(pp).any()):
+        # for point in points:
+        #     pp = np.array([point['x'], point['y'], point['z']], dtype=np.float32)
+        #     # self.get_logger().info(f"Point: {point}")
+        #     if not (np.isnan(pp).any() or np.isinf(pp).any()):
                 
-                pp = rotation_matrix @ pp
+        #         pp = rotation_matrix @ pp
 
-                pp = pp + np.array(self.vehicle_local_position)
+        #         pp = pp + np.array(self.vehicle_local_position)
 
-            point_list.append([pp[0], pp[1], pp[2]])
+        #     point_list.append([pp[0], pp[1], pp[2]])
             
                 
-        new_mess = pcl2.create_cloud( msg.header, point_fields, point_list)
+        # new_mess = pcl2.create_cloud( msg.header, point_fields, point_list)
 
-        self.pointcloud_pub.publish(new_mess)
+        # self.pointcloud_pub.publish(new_mess)
 
 
 def main(args=None):
