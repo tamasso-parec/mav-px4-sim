@@ -57,7 +57,7 @@ class ArmPublisher(Node):
         self.takeoff = False
         self.armed = False
 
-        self.lowest_altitude = 5.0
+        self.lowest_altitude = 2.0
         self.altitude = 0.0
 
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
@@ -103,17 +103,28 @@ class ArmPublisher(Node):
 
         if self.arm_state != VehicleStatus.ARMING_STATE_ARMED:
             self.arm()
+            return 
 
-        elif self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF: 
+        # elif self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF: 
+        #     self.take_off()
+
+        if self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF:
             self.take_off()
+            return
+
+        
+        if self.takeoff == True and  self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER: 
+            self.get_logger().info("Takeoff complete, stopping node")
+            sys.exit()
 
         # if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF and self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.altitude > self.lowest_altitude: 
         if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF and self.arm_state == VehicleStatus.ARMING_STATE_ARMED: 
             self.takeoff = True
+            return
 
-        elif self.takeoff == True and self.armed == True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER :
-            self.get_logger().info("Takeoff complete, stopping node")
-            sys.exit()
+        # elif self.takeoff == True and self.armed == True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER :
+        #     self.get_logger().info("Takeoff complete, stopping node")
+        #     sys.exit()
             
 
         
