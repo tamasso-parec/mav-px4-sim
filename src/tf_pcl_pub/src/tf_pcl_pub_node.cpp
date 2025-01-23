@@ -33,6 +33,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 // #include <pcl/filters/transform_point_cloud.h>
 #include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 using namespace std::chrono_literals;
 
@@ -57,28 +58,21 @@ public:
             std::bind(&PX4Visualizer::trajectory_setpoint_callback, this, std::placeholders::_1));
 
         pointcloud_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-            "/x500_depth/point_cloud", qos_profile,
+            "/x500_realsense/point_cloud", qos_profile,
             std::bind(&PX4Visualizer::pointcloud_callback, this, std::placeholders::_1));
+        
 
-        // vehicle_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(
-        //     "/px4_visualizer/vehicle_pose", 10);
-
-        // vehicle_vel_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
-        //     "/px4_visualizer/vehicle_velocity", 10);
-
-        // vehicle_path_pub_ = this->create_publisher<nav_msgs::msg::Path>(
-        //     "/px4_visualizer/vehicle_path", 10);
-
-        // setpoint_path_pub_ = this->create_publisher<nav_msgs::msg::Path>(
-        //     "/px4_visualizer/setpoint_path", 10);
 
         pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-            "/px4_visualizer/pointcloud", 5);
+            "/px4_visualizer/pointcloud", 10);
 
         vehicle_attitude_ = Eigen::Quaternionf(1.0, 0.0, 0.0, 0.0);
         vehicle_local_position_ = Eigen::Vector3f(0.0, 0.0, 0.0);
         vehicle_local_velocity_ = Eigen::Vector3f(0.0, 0.0, 0.0);
         setpoint_position_ = Eigen::Vector3f(0.0, 0.0, 0.0);
+
+        camera_rotation_ = (Eigen::Matrix3f::Identity());
+        camera_translation_ = Eigen::Vector3f(0.1, -0.0, 0.2);
 
         trail_size_ = 1000;
         last_local_pos_update_ = 0.0;
@@ -118,7 +112,7 @@ private:
         pcl::fromROSMsg(*msg, cloud);
 
         Eigen::Matrix3f rotation_matrix = vehicle_attitude_.toRotationMatrix();
-        Eigen::Vector3f translation = vehicle_local_position_;
+        Eigen::Vector3f translation = vehicle_local_position_ ;
 
         Eigen::Matrix4f transform_matrix = Eigen::Matrix4f::Identity();
         transform_matrix.topLeftCorner(3,3) = rotation_matrix;
@@ -129,6 +123,7 @@ private:
         sensor_msgs::msg::PointCloud2 output;
         pcl::toROSMsg(cloud, output);
         output.header.frame_id = "map";
+        // output.header.stamp = this->now();
         pointcloud_pub_->publish(output);
     }
 
@@ -226,6 +221,9 @@ private:
     Eigen::Vector3f vehicle_local_position_;
     Eigen::Vector3f vehicle_local_velocity_;
     Eigen::Vector3f setpoint_position_;
+
+    Eigen::Matrix3f camera_rotation_;
+    Eigen::Vector3f camera_translation_;
 
     nav_msgs::msg::Path vehicle_path_msg_;
     nav_msgs::msg::Path setpoint_path_msg_;

@@ -6,12 +6,13 @@
     </include>
     <include merge='true'>
       <uri>model://realsense_d435</uri>
-      <pose>0.1 -0. .26 0 0 1.5707</pose>
+      <pose>0.1 -0. 0.2 0 0 1.5707</pose>
+      <!-- <pose>0.1 -0. .26 0 0 0</pose> -->
     </include>
     <joint name="CameraJoint" type="fixed">
       <parent>base_link</parent>
       <child>realsense_d435/base_link</child>
-      <pose relative_to="base_link">.1 -0. .26 0 0 1.5707</pose>
+      <pose relative_to="base_link">0.1 -0. 0.2 0 0 1.5707</pose>
     </joint>
   </model>
 </sdf>
