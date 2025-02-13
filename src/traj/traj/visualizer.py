@@ -55,7 +55,7 @@ from scipy.spatial.transform import Rotation as R
 
 def vector2PoseMsg(frame_id, position, attitude):
     pose_msg = PoseStamped()
-    # msg.header.stamp = Clock().now().nanoseconds / 1000
+   
     pose_msg.header.frame_id = frame_id
     pose_msg.pose.orientation.w = attitude[0]
     pose_msg.pose.orientation.x = attitude[1]
@@ -204,6 +204,8 @@ class PX4Visualizer(Node):
         vehicle_pose_msg = vector2PoseMsg(
             "map", self.vehicle_local_position, self.vehicle_attitude
         )
+        # vehicle_pose_msg.header.stamp.sec = Clock().now().nanoseconds / 1e9
+        # vehicle_pose_msg.header.stamp.nanosec = self.get_clock().now().nanoseconds
         self.vehicle_pose_pub.publish(vehicle_pose_msg)
 
         # Publish time history of the vehicle path

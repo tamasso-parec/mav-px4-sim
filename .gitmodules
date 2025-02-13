@@ -13,3 +13,15 @@
 [submodule "src/realsense-ros"]
 	path = src/realsense-ros
 	url = git@github.com:IntelRealSense/realsense-ros.git
+[submodule "src/octomap_mapping"]
+	path = src/octomap_mapping
+	url = git@github.com:OctoMap/octomap_mapping.git
+	branch = ros2
+[submodule "src/octomap_msgs"]
+	path = src/octomap_msgs
+	url = git@github.com:OctoMap/octomap_msgs.git
+	branch = ros2
+[submodule "src/octomap_ros"]
+	path = src/octomap_ros
+	url = git@github.com:OctoMap/octomap_ros.git
+	branch = ros2
