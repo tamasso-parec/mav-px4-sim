@@ -54,9 +54,10 @@ class LandDisarmPublisher(Node):
         arm_timer_period = .5 # seconds
         # self.arm_timer_ = self.create_timer(arm_timer_period, self.arm_timer_callback)
         self.wait_count = 0
-        self.loitering = True
+        self.positioning = False
         self.armed = True
         self.landed = False
+        self.landing = False
 
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arm_state = VehicleStatus.ARMING_STATE_ARMED
@@ -79,17 +80,19 @@ class LandDisarmPublisher(Node):
     
     def disarm(self):
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0)
-        self.get_logger().info("Arm command sent")
+        self.get_logger().info("Disarm command sent")
         self.armed = False
     
     def land(self):
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, param1 = 0.0, param7=0.0) # param7 is altitude in meters
-        self.get_logger().info("Takeoff command send")
-        self.landed = True
+        self.get_logger().info("Land command sent")
+        self.landing = True
         # self.takeoff = True
 
-    def set_loitering(self):
+    def set_positioning(self):
         self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LOITER_UNLIM, param1 = 0.0, param7=0.0) # param7 is altitude in meters
+
+    
 
 
     #receives and sets vehicle status values 
@@ -102,26 +105,67 @@ class LandDisarmPublisher(Node):
         self.failsafe = msg.failsafe
         self.flightCheck = msg.pre_flight_checks_pass
 
-        if self.arm_state != VehicleStatus.ARMING_STATE_ARMED:
-            self.get_logger().info("System is not armed")
-            self.loitering = False
-            self.arm_state = False
-            return 
-        
-        if self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
-            self.set_loitering()
-            self.loitering = True
-            return
-        
-        if self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
-            self.loitering = False
-            self.get_logger().info("Landing")
+        if not self.landing:
             self.land()
+            self.landing = True
             return
 
-        if self.landed == True and self.loitering==False and self.arm_state== True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
-            self.get_logger().info("Landed, stopping node")
-            sys.exit()
+        if self.landing:
+            self.get_logger().info("Landing in progress")
+            if msg.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER or msg.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD:
+
+                self.get_logger().info("Landing complete. Disarming...")
+                self.disarm()
+                self.set_positioning()
+                self.landing = False
+                self.landed = True
+                # rclpy.shutdown()
+                sys.exit()
+
+        # if self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_LAND: 
+            
+
+        #     if self.landing==False and self.landed == False and self.positioning == False: 
+        #         self.get_logger().info("Setting positioning")
+        #         self.set_positioning()
+        #         self.positioning = True
+        #         return
+            
+            
+        #     if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER and self.landing==False and self.landed == True:
+        #         self.get_logger().info("Landed, stopping node")
+        #         self.disarm()
+        #         sys.exit()
+        #         return
+            
+        #     if self.landing==False and self.landed == False and self.positioning == True: 
+        #         self.land()
+
+        # elif self.landing == True:
+        #     self.get_logger().info("Landing in progress")
+        #     self.landed = True
+        #     self.landing = False
+        #     return
+            
+
+            
+
+
+
+        # if self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_LOITER or self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_LAND and self.landed==False:
+        #     self.set_positioning()
+            
+        #     return 
+        
+
+        # if self.landed == False:
+        #     self.land() 
+
+
+        # if self.landed == True and  self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
+        #     self.get_logger().info("Landed, stopping node")
+        #     self.disarm()
+        #     sys.exit()
 
        
         

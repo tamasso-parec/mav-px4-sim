@@ -135,7 +135,7 @@ class ArmPublisher(Node):
 
 
         self.altitude = -msg.z
-        self.get_logger().info(f"Altitude: {msg.z}")
+        # self.get_logger().info(f"Altitude: {msg.z}")
 
 
 

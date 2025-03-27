@@ -70,7 +70,7 @@ class OffboardControl(Node):
         self.dt = timer_period
         self.declare_parameter('radius', 2.0)
         self.declare_parameter('omega', 1.0)
-        self.declare_parameter('altitude', 1.5)
+        self.declare_parameter('altitude', 5.0)
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arming_state = VehicleStatus.ARMING_STATE_DISARMED
         # Note: no parameter callbacks are used to prevent sudden inflight changes of radii and omega 
