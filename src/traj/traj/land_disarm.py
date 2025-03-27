@@ -21,7 +21,7 @@ from geometry_msgs.msg import Twist, Vector3
 
 
 
-class ArmPublisher(Node):
+class LandDisarmPublisher(Node):
 
     def __init__(self):
         super().__init__('minimal_publisher')
@@ -54,11 +54,9 @@ class ArmPublisher(Node):
         arm_timer_period = .5 # seconds
         # self.arm_timer_ = self.create_timer(arm_timer_period, self.arm_timer_callback)
         self.wait_count = 0
-        self.takeoff = False
-        self.armed = False
-
-        self.lowest_altitude = 1.0
-        self.altitude = 0.0
+        self.loitering = True
+        self.armed = True
+        self.landed = False
 
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arm_state = VehicleStatus.ARMING_STATE_ARMED
@@ -79,16 +77,19 @@ class ArmPublisher(Node):
         msg.timestamp = int(Clock().now().nanoseconds / 1000) # time in microseconds
         self.vehicle_command_publisher_.publish(msg)
     
-    def arm(self):
-        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0)
+    def disarm(self):
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 0.0)
         self.get_logger().info("Arm command sent")
-        self.armed = True
+        self.armed = False
     
-    def take_off(self):
-        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_TAKEOFF, param1 = 1.0, param7=-self.lowest_altitude) # param7 is altitude in meters
+    def land(self):
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LAND, param1 = 0.0, param7=0.0) # param7 is altitude in meters
         self.get_logger().info("Takeoff command send")
-        
+        self.landed = True
         # self.takeoff = True
+
+    def set_loitering(self):
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_NAV_LOITER_UNLIM, param1 = 0.0, param7=0.0) # param7 is altitude in meters
 
 
     #receives and sets vehicle status values 
@@ -102,31 +103,27 @@ class ArmPublisher(Node):
         self.flightCheck = msg.pre_flight_checks_pass
 
         if self.arm_state != VehicleStatus.ARMING_STATE_ARMED:
-            self.arm()
+            self.get_logger().info("System is not armed")
+            self.loitering = False
+            self.arm_state = False
             return 
-
-        # elif self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF: 
-        #     self.take_off()
-
-        if self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF:
-            self.take_off()
+        
+        if self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
+            self.set_loitering()
+            self.loitering = True
+            return
+        
+        if self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
+            self.loitering = False
+            self.get_logger().info("Landing")
+            self.land()
             return
 
-        
-        if self.takeoff == True and  self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER: 
-            self.get_logger().info("Takeoff complete, stopping node")
+        if self.landed == True and self.loitering==False and self.arm_state== True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
+            self.get_logger().info("Landed, stopping node")
             sys.exit()
 
-        # if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF and self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.altitude > self.lowest_altitude: 
-        if self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF and self.arm_state == VehicleStatus.ARMING_STATE_ARMED: 
-            self.takeoff = True
-            return
-
-        # elif self.takeoff == True and self.armed == True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER :
-        #     self.get_logger().info("Takeoff complete, stopping node")
-        #     sys.exit()
-            
-
+       
         
         self.wait_count += 1
 
@@ -135,7 +132,7 @@ class ArmPublisher(Node):
 
 
         self.altitude = -msg.z
-        self.get_logger().info(f"Altitude: {msg.z}")
+        # self.get_logger().info(f"Altitude: {msg.z}")
 
 
 
@@ -143,14 +140,14 @@ class ArmPublisher(Node):
 def main():
     rclpy.init()
 
-    arm_publisher = ArmPublisher()
+    land_disarm_publisher = LandDisarmPublisher()
 
-    rclpy.spin(arm_publisher)
+    rclpy.spin(land_disarm_publisher)
 
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    arm_publisher.destroy_node()
+    land_disarm_publisher.destroy_node()
     rclpy.shutdown()
 
 

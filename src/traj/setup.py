@@ -34,6 +34,7 @@ setup(
             'offboard_control = traj.offboard_control:main',
             'visualizer = traj.visualizer:main',
             'px4_tf = traj.px4_transform_pub:main',
+            'land_disarm = traj.land_disarm:main',
         ],
     },
 )
