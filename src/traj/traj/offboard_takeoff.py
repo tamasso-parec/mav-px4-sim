@@ -45,7 +45,7 @@ from px4_msgs.msg import VehicleStatus
 from px4_msgs.msg import VehicleCommand
 
 
-class OffboardControl(Node):
+class OffboardTakeoff(Node):
 
     def __init__(self):
         super().__init__('minimal_publisher')
@@ -128,7 +128,7 @@ class OffboardControl(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    offboard_control = OffboardControl()
+    offboard_control = OffboardTakeoff()
 
     rclpy.spin(offboard_control)
 

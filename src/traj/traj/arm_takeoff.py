@@ -57,7 +57,7 @@ class ArmPublisher(Node):
         self.takeoff = False
         self.armed = False
 
-        self.lowest_altitude = 1.0
+        self.lowest_altitude = 4.0
         self.altitude = 0.0
 
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
@@ -105,8 +105,6 @@ class ArmPublisher(Node):
             self.arm()
             return 
 
-        # elif self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF: 
-        #     self.take_off()
 
         if self.arm_state == VehicleStatus.ARMING_STATE_ARMED and self.takeoff == False and self.nav_state != VehicleStatus.NAVIGATION_STATE_AUTO_TAKEOFF:
             self.take_off()
@@ -122,9 +120,6 @@ class ArmPublisher(Node):
             self.takeoff = True
             return
 
-        # elif self.takeoff == True and self.armed == True and self.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER :
-        #     self.get_logger().info("Takeoff complete, stopping node")
-        #     sys.exit()
             
 
         
@@ -133,9 +128,9 @@ class ArmPublisher(Node):
     #receives and sets vehicle status values 
     def vehicle_local_position_callback(self, msg):
 
-
+        self.get_logger().info(f"Altitude: {msg.z}")
         self.altitude = -msg.z
-        # self.get_logger().info(f"Altitude: {msg.z}")
+        self.get_logger().info(f"Altitude: {msg.z}")
 
 
 
