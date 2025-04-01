@@ -32,7 +32,7 @@ setup(
             'processes = traj.processes:main',
             'arm_takeoff = traj.arm_takeoff:main',
             'offboard_control = traj.offboard_control:main',
-            'offboard_control = traj.offboard_takeoff:main',
+            'offboard_takeoff = traj.offboard_takeoff:main',
             'visualizer = traj.visualizer:main',
             'px4_tf = traj.px4_transform_pub:main',
             'land_disarm = traj.land_disarm:main',

@@ -39,10 +39,14 @@ from rclpy.node import Node
 from rclpy.clock import Clock
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 
+import sys
+
+
 from px4_msgs.msg import OffboardControlMode
 from px4_msgs.msg import TrajectorySetpoint
 from px4_msgs.msg import VehicleStatus
 from px4_msgs.msg import VehicleCommand
+from px4_msgs.msg import VehicleLocalPosition
 
 
 class OffboardTakeoff(Node):
@@ -62,23 +66,26 @@ class OffboardTakeoff(Node):
             self.vehicle_status_callback,
             qos_profile)
         
+        #Create subscriptions
+        self.local_pos_sub = self.create_subscription(
+            VehicleLocalPosition,
+            '/fmu/out/vehicle_local_position',
+            self.vehicle_local_position_callback,
+            qos_profile)
+        
         self.vehicle_command_publisher_ = self.create_publisher(VehicleCommand, "/fmu/in/vehicle_command", 10)
         self.publisher_offboard_mode = self.create_publisher(OffboardControlMode, '/fmu/in/offboard_control_mode', qos_profile)
-        self.publisher_trajectory = self.create_publisher(TrajectorySetpoint, '/fmu/in/trajectory_setpoint', qos_profile)
-        timer_period = 0.02  # seconds
+        self.publisher_takeoff = self.create_publisher(TrajectorySetpoint, '/fmu/in/trajectory_setpoint', qos_profile)
+        timer_period = 0.05  # seconds
         self.timer = self.create_timer(timer_period, self.cmdloop_callback)
-        self.dt = timer_period
-        self.declare_parameter('radius', 0.0)
-        self.declare_parameter('omega', 0.0)
         self.declare_parameter('altitude', 1.0)
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arming_state = VehicleStatus.ARMING_STATE_DISARMED
         # Note: no parameter callbacks are used to prevent sudden inflight changes of radii and omega 
         # which would result in large discontinuities in setpoints
-        self.theta = 0.0
-        self.radius = self.get_parameter('radius').value
-        self.omega = self.get_parameter('omega').value
         self.altitude = self.get_parameter('altitude').value
+
+        self.takeoff_completed = False
 
 
     def set_offboard_mode(self):
@@ -106,6 +113,11 @@ class OffboardTakeoff(Node):
             print("NAV_STATE: OFFBOARD")
             self.set_offboard_mode()
 
+    def vehicle_local_position_callback(self, msg):
+        if msg.z <= -self.altitude:
+            print("Takeoff completed")
+            self.takeoff_completed = True
+
     def cmdloop_callback(self):
         # Publish offboard control modes
         offboard_msg = OffboardControlMode()
@@ -114,25 +126,33 @@ class OffboardTakeoff(Node):
         offboard_msg.velocity=False
         offboard_msg.acceleration=False
         self.publisher_offboard_mode.publish(offboard_msg)
-        if (self.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD and self.arming_state == VehicleStatus.ARMING_STATE_ARMED):
 
-            trajectory_msg = TrajectorySetpoint()
-            trajectory_msg.position[0] = self.radius * np.cos(self.theta)
-            trajectory_msg.position[1] = self.radius * np.sin(self.theta)
-            trajectory_msg.position[2] = -self.altitude
-            self.publisher_trajectory.publish(trajectory_msg)
+        if not self.takeoff_completed:
+            if (self.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD and self.arming_state == VehicleStatus.ARMING_STATE_ARMED):
 
-            self.theta = self.theta + self.omega * self.dt
+                trajectory_msg = TrajectorySetpoint()
+                trajectory_msg.position[0] = 0
+                trajectory_msg.position[1] = 0
+                trajectory_msg.position[2] = -self.altitude
+                self.publisher_takeoff.publish(trajectory_msg)
+            else: 
+                print("Waiting for vehicle to be armed and in offboard mode")
+                self.takeoff_completed = False
+        else:
+            print("Takeoff completed, stopping node")
+            sys.exit()
+
+            
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    offboard_control = OffboardTakeoff()
+    offboard_takeoff = OffboardTakeoff()
 
-    rclpy.spin(offboard_control)
+    rclpy.spin(offboard_takeoff)
 
-    offboard_control.destroy_node()
+    offboard_takeoff.destroy_node()
     rclpy.shutdown()
 
 
