@@ -27,7 +27,7 @@ def generate_launch_description():
 
 	pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
-	pkg_project_description = get_package_share_directory('ros_gz_example_description')
+	pkg_project_description = get_package_share_directory('drone_description')
 	pkg_traj = get_package_share_directory('traj')
 	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_mono_cam', 'model.sdf')
 	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_depth', 'model.sdf')
@@ -35,7 +35,7 @@ def generate_launch_description():
 	with open(sdf_file, 'r') as infp:
 		robot_desc = infp.read()
 
-	ros_gz_example_gazebo_dir = get_package_share_directory('ros_gz_example_gazebo')
+	ros_gz_example_gazebo_dir = get_package_share_directory('drone_gazebo')
 
 	airframe_value = LaunchConfiguration("airframe")
 	ddsport_value = LaunchConfiguration("port")
@@ -142,6 +142,12 @@ def generate_launch_description():
 		output='screen'
 	)
 	
+	ground_truth_node = Node(
+		package='ground_truth',
+		executable='drone_ground_truth',
+		name='drone_ground_truth',
+		output='screen'
+	)
 	
 	depth_camera_pointcloud_node = Node(
 		package='tf2_ros',
@@ -188,6 +194,6 @@ def generate_launch_description():
 	px4_tf_node,
 	pointcloud_trafo_node,
 	visualizer_node,
-	rviz2_node
+	rviz2_node, 
 	]
 	)    

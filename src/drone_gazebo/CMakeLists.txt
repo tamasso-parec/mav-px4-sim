@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Following directive defines the project name.
-project(ros_gz_example_gazebo)
+project(drone_gazebo)
 
 
 # Following directives find required packages and load their configuration.
