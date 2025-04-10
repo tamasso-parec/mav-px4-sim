@@ -20,6 +20,16 @@
       <real_time_factor>1.000000</real_time_factor>
       <max_contacts>20</max_contacts>
     </physics>
+    <plugin name="gz::sim::systems::Physics" filename="gz-sim-physics-system"/>
+    <plugin name="gz::sim::systems::UserCommands" filename="gz-sim-user-commands-system"/>
+    <plugin name="gz::sim::systems::SceneBroadcaster" filename="gz-sim-scene-broadcaster-system"/>
+    <plugin name="gz::sim::systems::Contact" filename="gz-sim-contact-system"/>
+    <plugin name="gz::sim::systems::Imu" filename="gz-sim-imu-system"/>
+    <plugin name="gz::sim::systems::AirPressure" filename="gz-sim-air-pressure-system"/>
+    <plugin name="gz::sim::systems::AirSpeed" filename="gz-sim-air-speed-system"/>
+    <plugin name="gz::sim::systems::ApplyLinkWrench" filename="gz-sim-apply-link-wrench-system"/>
+    <plugin name="gz::sim::systems::NavSat" filename="gz-sim-navsat-system"/>
+    <plugin name="gz::sim::systems::Sensors" filename="gz-sim-sensors-system"/>
     <light name="sun" type="directional">
       <cast_shadows>1</cast_shadows>
       <pose>0.000000 0.000000 10.000000 0.000000 0.000000 0.000000</pose>
@@ -4150,5 +4160,12 @@
         <view_controller>orbit</view_controller>
       </camera>
     </gui>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>46.06712712661159</latitude_deg>
+      <longitude_deg> 11.149827878411065</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
   </world>
 </sdf>

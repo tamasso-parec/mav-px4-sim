@@ -15,10 +15,18 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
+	# TODO: Add launch arguments from keyboard and set PX4_GZ_MODEL_POSE to specify the spawn position
+
+
 	airframe_launch_arg = DeclareLaunchArgument(
-		'airframe', default_value='gz_x500_depth'
+		# 'airframe', default_value='gz_x500_depth'
+		'airframe', default_value='gz_x500_realsense'
 		# 'airframe', default_value='gz_x500_base'
 		# 'airframe', default_value='gz_x500_mono_cam'
+	)
+
+	gazebo_world_launch_arg = DeclareLaunchArgument(
+		'world', default_value='empty_room.sdf'
 	)
   
 	ddsport_launch_arg = DeclareLaunchArgument(
@@ -30,15 +38,17 @@ def generate_launch_description():
 	pkg_project_description = get_package_share_directory('drone_description')
 	pkg_traj = get_package_share_directory('traj')
 	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_mono_cam', 'model.sdf')
-	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_depth', 'model.sdf')
+	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_depth', 'model.sdf')
+	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_realsense', 'model.sdf')
 	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_base', 'model.sdf')
 	with open(sdf_file, 'r') as infp:
 		robot_desc = infp.read()
 
-	ros_gz_example_gazebo_dir = get_package_share_directory('drone_gazebo')
+	drone_gazebo_dir = get_package_share_directory('drone_gazebo')
 
 	airframe_value = LaunchConfiguration("airframe")
 	ddsport_value = LaunchConfiguration("port")
+	gazebo_world_value = LaunchConfiguration("world")
 	
 	px4_src_dir =  os.path.expanduser('~/PX4-Autopilot')
 
@@ -52,9 +62,9 @@ def generate_launch_description():
 			os.path.join(pkg_ros_gz_sim, 'launch', 'gz_sim.launch.py')),
 		launch_arguments={
 			'gz_args': PathJoinSubstitution([
-				ros_gz_example_gazebo_dir,
+				drone_gazebo_dir,
 				'worlds',
-				'default_custom.sdf', 
+				gazebo_world_value, 
 			]),
 			'on_exit_shutdown': 'True',
 			'paused': 'False',
@@ -85,14 +95,7 @@ def generate_launch_description():
 
 
 	px4_sim_cmd = ExecuteProcess(
-		# cmd=[
-		# 	'gnome-terminal',
-		# 	'--',
-		# 	# "PX4_GZ_STANDALONE=1",
-		# 	"make", 
-		# 	"px4_sitl",
-		# 	airframe_value
-		# ],
+		
 		cmd=[
 			'gnome-terminal',
 			'--',
@@ -182,6 +185,9 @@ def generate_launch_description():
 	# uxrce_dds_synct_env,
 	airframe_launch_arg,
 	ddsport_launch_arg,
+	gazebo_world_launch_arg,
+
+
 	px4_sim_model_env,
 	# gz_standalone_env,
 	uxrce_dds_synct_env,
@@ -195,5 +201,6 @@ def generate_launch_description():
 	pointcloud_trafo_node,
 	visualizer_node,
 	rviz2_node, 
+	ground_truth_node
 	]
 	)    
