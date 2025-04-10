@@ -15,7 +15,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-	# TODO: Add launch arguments from keyboard and set PX4_GZ_MODEL_POSE to specify the spawn position
+	# TODO: Add launch arguments from terminal such as airframe name and world name and set PX4_GZ_MODEL_POSE to specify the spawn position
 
 
 	airframe_launch_arg = DeclareLaunchArgument(
