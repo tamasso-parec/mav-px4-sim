@@ -11,12 +11,25 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
+from launch.substitutions import EnvironmentVariable
 
 
 def generate_launch_description():
 
 	# TODO: Add launch arguments from terminal such as airframe name and world name and set PX4_GZ_MODEL_POSE to specify the spawn position
+	
+	# set_resource_path = SetEnvironmentVariable(
+    #     name='GZ_SIM_RESOURCE_PATH',
+    #     value="/usr/share/gz/gz-sim8/"
+    # )
 
+	set_resource_path = SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=[EnvironmentVariable('GZ_SIM_RESOURCE_PATH'), ':/usr/share/gz/gz-sim8/'])
+	# set_resource_path = SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=[EnvironmentVariable('PATH'), ':/banana'])
+	
+	set_pose = SetEnvironmentVariable(
+		name='PX4_GZ_MODEL_POSE',
+		value='0 0 0 0 0 1.57'
+	)
 
 	airframe_launch_arg = DeclareLaunchArgument(
 		# 'airframe', default_value='gz_x500_depth'
@@ -26,7 +39,7 @@ def generate_launch_description():
 	)
 
 	gazebo_world_launch_arg = DeclareLaunchArgument(
-		'world', default_value='empty_room.sdf'
+		'world', default_value='warehouse.sdf'
 	)
   
 	ddsport_launch_arg = DeclareLaunchArgument(
@@ -183,6 +196,8 @@ def generate_launch_description():
 	[
 	# use_sim_time_setter,
 	# uxrce_dds_synct_env,
+	set_resource_path,
+	set_pose,
 	airframe_launch_arg,
 	ddsport_launch_arg,
 	gazebo_world_launch_arg,
@@ -201,6 +216,8 @@ def generate_launch_description():
 	pointcloud_trafo_node,
 	visualizer_node,
 	rviz2_node, 
-	ground_truth_node
+	ground_truth_node, 
+
+	
 	]
 	)    
