@@ -25,3 +25,6 @@
 	path = src/octomap_ros
 	url = git@github.com:OctoMap/octomap_ros.git
 	branch = ros2
+[submodule "src/PUMA_ros"]
+	path = src/PUMA_ros
+	url = git@github.com:tamasso-parec/PUMA_ros.git
