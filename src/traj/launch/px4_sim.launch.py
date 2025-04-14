@@ -24,7 +24,6 @@ def generate_launch_description():
     # )
 
 	set_resource_path = SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=[EnvironmentVariable('GZ_SIM_RESOURCE_PATH'), ':/usr/share/gz/gz-sim8/'])
-	# set_resource_path = SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=[EnvironmentVariable('PATH'), ':/banana'])
 	
 	set_pose = SetEnvironmentVariable(
 		name='PX4_GZ_MODEL_POSE',
