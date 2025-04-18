@@ -57,16 +57,17 @@ class PX4TransformPublisher(Node):
         t = TransformStamped()
         t.header.stamp = self.clock.now().to_msg()
         t.header.frame_id = 'drone'
-        t.child_frame_id = 'x500_depth_0/OakD-Lite/base_link/StereoOV7251'
+        t.child_frame_id = 'x500_realsense/realsense_d435/base_link/realsense_d435'
+
         
         # Assuming the transform from drone to camera is fixed and known
         t.transform.translation.x = 0.0  # Example values, replace with actual values from sdf model
         t.transform.translation.y = 0.0
         t.transform.translation.z = 0.0
-        t.transform.rotation.w = 1.0
-        t.transform.rotation.x = 0.0
-        t.transform.rotation.y = 0.0
-        t.transform.rotation.z = 0.0
+        t.transform.rotation.w = -0.5
+        t.transform.rotation.x = 0.5
+        t.transform.rotation.y = -0.5
+        t.transform.rotation.z = 0.5
         
         self.br.sendTransform(t)
 

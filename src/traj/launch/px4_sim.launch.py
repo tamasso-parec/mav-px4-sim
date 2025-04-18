@@ -25,7 +25,6 @@ def generate_launch_description():
 
 	set_resource_path = SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=[EnvironmentVariable('GZ_SIM_RESOURCE_PATH'), ':/usr/share/gz/gz-sim8/'])
 
-	gazebo_plugin_path = '/opt/ros/humble/lib'
 
 	set_plugin_path = SetEnvironmentVariable(name='GZ_SIM_SYSTEM_PLUGIN_PATH',value=[EnvironmentVariable('GZ_SIM_SYSTEM_PLUGIN_PATH'), ':/opt/ros/humble/lib'])
 	
@@ -35,10 +34,7 @@ def generate_launch_description():
 	)
 
 	airframe_launch_arg = DeclareLaunchArgument(
-		# 'airframe', default_value='gz_x500_depth'
 		'airframe', default_value='gz_x500_realsense'
-		# 'airframe', default_value='gz_x500_base'
-		# 'airframe', default_value='gz_x500_mono_cam'
 	)
 
 	gazebo_world_launch_arg = DeclareLaunchArgument(
@@ -151,22 +147,22 @@ def generate_launch_description():
         executable='static_transform_publisher',
         arguments=[
             '0', '0', '0',                # translation x y z
-            '1.5708', '0', '1.5708',    # rotation in RPY (rad): 90°, 0°, 90°
-            'camera_color_optical_frame' # child frame
-            'drone',               # parent frame
+            '0','0','0',    # rotation in RPY (rad): 90°, 0°, 90°
+            'camera_color_optical_frame', # child frame
+            'x500_realsense/realsense_d435/base_link/realsense_d435',               # parent frame
         ]
     )
 
-	map_frame_node = Node(
-		package='tf2_ros',
-		executable='static_transform_publisher',
-		name='map_frame_publisher',
-		arguments=[
-			'0', '0', '0',
-			'0', '0', '0', 
-			'world', 'map'],
-		output='screen'
-	)
+	# map_frame_node = Node(
+	# 	package='tf2_ros',
+	# 	executable='static_transform_publisher',
+	# 	name='map_frame_publisher',
+	# 	arguments=[
+	# 		'0', '0', '0',
+	# 		'0', '0', '0', 
+	# 		'world', 'map'],
+	# 	output='screen'
+	# )
 
 	slam_map_frame_node = Node(
 		package='tf2_ros',
@@ -174,8 +170,10 @@ def generate_launch_description():
 		name='map_frame_publisher',
 		arguments=[
 			'0', '0', '0',                # translation x y z
-            '-1.5708', '0', '-1.5708',    # rotation in RPY (rad): -90°, 0°, -90°
-			'slam_map', 'map'],
+            '-0.5', '0.5', '-0.5', '-0.5',   # rotation in RPY (rad): -90°, 0°, -90°
+			'slam_map', 
+			'map'
+			],
 		output='screen'
 	)
 
@@ -202,14 +200,13 @@ def generate_launch_description():
 		output='screen'
 	)
 	
-	depth_camera_pointcloud_node = Node(
-		package='tf2_ros',
-		executable='static_transform_publisher',
-		name='depth_camera_pointcloud_publisher',
-		arguments=['0', '0', '0', '0', '0', '0', 'drone', 'x500_depth_0/OakD-Lite/base_link/StereoOV7251'],
-		output='screen'
-	)
-
+	# depth_camera_pointcloud_node = Node(
+	# 	package='tf2_ros',
+	# 	executable='static_transform_publisher',
+	# 	name='depth_camera_pointcloud_publisher',
+	# 	arguments=['0', '0', '0', '0', '0', '0', 'drone', 'x500_depth_0/OakD-Lite/base_link/StereoOV7251'],
+	# 	output='screen'
+	# )
 
 	visualizer_node = Node(
             package='traj',
@@ -240,7 +237,6 @@ def generate_launch_description():
 	ddsport_launch_arg,
 	gazebo_world_launch_arg,
 
-
 	px4_sim_model_env,
 	# gz_standalone_env,
 	uxrce_dds_synct_env,
@@ -250,7 +246,6 @@ def generate_launch_description():
 	px4_sim_cmd,
 	QGC_cmd, 
 	ros_gz_bridge, 
-	map_frame_node,
 	slam_map_frame_node,
 	camera_optical_frame_tf,
 	px4_tf_node,
