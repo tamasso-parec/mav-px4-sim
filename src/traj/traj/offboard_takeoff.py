@@ -88,6 +88,7 @@ class OffboardTakeoff(Node):
         self.takeoff_completed = False
 
 
+
     def set_offboard_mode(self):
         msg = VehicleCommand()
         msg.param1 = 1.0
@@ -109,7 +110,7 @@ class OffboardTakeoff(Node):
         self.nav_state = msg.nav_state
         self.arming_state = msg.arming_state
 
-        if msg.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
+        if msg.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER or msg.nav_state == VehicleStatus.NAVIGATION_STATE_POSCTL:
             print("NAV_STATE: OFFBOARD")
             self.set_offboard_mode()
 

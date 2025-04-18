@@ -24,6 +24,10 @@ def generate_launch_description():
     # )
 
 	set_resource_path = SetEnvironmentVariable(name='GZ_SIM_RESOURCE_PATH', value=[EnvironmentVariable('GZ_SIM_RESOURCE_PATH'), ':/usr/share/gz/gz-sim8/'])
+
+	gazebo_plugin_path = '/opt/ros/humble/lib'
+
+	set_plugin_path = SetEnvironmentVariable(name='GZ_SIM_SYSTEM_PLUGIN_PATH',value=[EnvironmentVariable('GZ_SIM_SYSTEM_PLUGIN_PATH'), ':/opt/ros/humble/lib'])
 	
 	set_pose = SetEnvironmentVariable(
 		name='PX4_GZ_MODEL_POSE',
@@ -84,6 +88,14 @@ def generate_launch_description():
 		}.items(),
 	)
 
+	# Bridge
+	bridge = Node(
+		package='ros_gz_image',
+		executable='image_bridge',
+		arguments=['rgbd_camera/image', 'rgbd_camera/depth_image'],
+		output='screen'
+	)
+
 
 	# Bridge ROS topics and Gazebo messages for establishing communication
 	ros_gz_bridge = Node(
@@ -134,11 +146,36 @@ def generate_launch_description():
 		output='screen'
 	)
 
+	camera_optical_frame_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        arguments=[
+            '0', '0', '0',                # translation x y z
+            '1.5708', '0', '1.5708',    # rotation in RPY (rad): 90°, 0°, 90°
+            'camera_color_optical_frame' # child frame
+            'drone',               # parent frame
+        ]
+    )
+
 	map_frame_node = Node(
 		package='tf2_ros',
 		executable='static_transform_publisher',
 		name='map_frame_publisher',
-		arguments=['0', '0', '0', '0', '0', '0', 'world', 'map'],
+		arguments=[
+			'0', '0', '0',
+			'0', '0', '0', 
+			'world', 'map'],
+		output='screen'
+	)
+
+	slam_map_frame_node = Node(
+		package='tf2_ros',
+		executable='static_transform_publisher',
+		name='map_frame_publisher',
+		arguments=[
+			'0', '0', '0',                # translation x y z
+            '-1.5708', '0', '-1.5708',    # rotation in RPY (rad): -90°, 0°, -90°
+			'slam_map', 'map'],
 		output='screen'
 	)
 
@@ -197,6 +234,7 @@ def generate_launch_description():
 	# use_sim_time_setter,
 	# uxrce_dds_synct_env,
 	set_resource_path,
+	set_plugin_path,
 	set_pose,
 	airframe_launch_arg,
 	ddsport_launch_arg,
@@ -208,10 +246,13 @@ def generate_launch_description():
 	uxrce_dds_synct_env,
 	dds_cmd,
 	gz_sim,
+	bridge,
 	px4_sim_cmd,
 	QGC_cmd, 
 	ros_gz_bridge, 
 	map_frame_node,
+	slam_map_frame_node,
+	camera_optical_frame_tf,
 	px4_tf_node,
 	pointcloud_trafo_node,
 	visualizer_node,

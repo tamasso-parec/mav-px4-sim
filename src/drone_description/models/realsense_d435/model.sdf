@@ -59,6 +59,7 @@
         </geometry>
       </visual>
 
+
       <sensor name="realsense_d435" type="rgbd_camera">
         <pose>0 0 0 0 0 -1.57</pose>
         <update_rate>30</update_rate>
@@ -66,7 +67,7 @@
         <camera name="camera">
           <horizontal_fov>1.0472</horizontal_fov>
           <lens>
-            <intrinsics>
+            <intrinsics> 
               <!-- fx = fy = width / ( 2 * tan (hfov / 2 ) ) -->
               <fx>554.25469</fx>
               <fy>554.25469</fy>
@@ -92,12 +93,12 @@
           </image>
           <clip>
             <near>0.01</near>
-            <far>300</far>
+            <far>200</far>
           </clip>
           <depth_camera>
             <clip>
               <near>0.1</near>
-              <far>10</far>
+              <far>20</far>
             </clip>
           </depth_camera>
           <noise>
