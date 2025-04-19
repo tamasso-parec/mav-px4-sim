@@ -7,14 +7,37 @@ from ament_index_python.packages import get_package_share_directory, get_package
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from launch.substitutions import EnvironmentVariable
+from launch.actions import OpaqueFunction
+
 
 
 def generate_launch_description():
+
+	airframe = LaunchConfiguration("airframe")
+	ddsport = LaunchConfiguration("ddsport")
+	gz_world_file = LaunchConfiguration("gz_world_file")
+	gz_world = LaunchConfiguration("gz_world")
+
+
+	airframe_launch_arg = DeclareLaunchArgument(
+		'airframe', default_value='gz_x500_realsense'
+	)
+
+	gazebo_world_launch_arg = DeclareLaunchArgument(
+		'gz_world_file', default_value='warehouse.sdf'
+	)
+	gazebo_name_launch_arg = DeclareLaunchArgument(
+		'gz_world', default_value='warehouse'
+	)
+  
+	ddsport_launch_arg = DeclareLaunchArgument(
+		'ddsport', default_value='8888'
+	)
 
 	# TODO: Add launch arguments from terminal such as airframe name and world name and set PX4_GZ_MODEL_POSE to specify the spawn position
 	
@@ -34,34 +57,21 @@ def generate_launch_description():
 		# value='0 0 0 0 0 0'
 	)
 
-	airframe_launch_arg = DeclareLaunchArgument(
-		'airframe', default_value='gz_x500_realsense'
-	)
-
-	gazebo_world_launch_arg = DeclareLaunchArgument(
-		'world', default_value='warehouse.sdf'
-	)
-  
-	ddsport_launch_arg = DeclareLaunchArgument(
-	'port', default_value='8888'
-	)
+	
 
 	pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
 	pkg_project_description = get_package_share_directory('drone_description')
 	pkg_traj = get_package_share_directory('traj')
-	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_mono_cam', 'model.sdf')
-	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_depth', 'model.sdf')
+
 	sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_realsense', 'model.sdf')
-	# sdf_file  =  os.path.join(pkg_project_description, 'models', 'x500_base', 'model.sdf')
+
 	with open(sdf_file, 'r') as infp:
 		robot_desc = infp.read()
 
 	drone_gazebo_dir = get_package_share_directory('drone_gazebo')
 
-	airframe_value = LaunchConfiguration("airframe")
-	ddsport_value = LaunchConfiguration("port")
-	gazebo_world_value = LaunchConfiguration("world")
+	
 	
 	px4_src_dir =  os.path.expanduser('~/PX4-Autopilot')
 
@@ -77,13 +87,27 @@ def generate_launch_description():
 			'gz_args': PathJoinSubstitution([
 				drone_gazebo_dir,
 				'worlds',
-				gazebo_world_value, 
+				gz_world_file, 
 			]),
 			'on_exit_shutdown': 'True',
 			'paused': 'False',
 			'use_sim_time': 'true'
 		}.items(),
 	)
+	
+	# Start the simulation 
+	sim_start = ExecuteProcess(
+		cmd=[
+			'gz', 'service', '-s', 
+			'/world/warehouse/control',  
+			'--reqtype', 'gz.msgs.WorldControl', 
+			'--reptype', 'gz.msgs.Boolean', 
+			'--timeout', '10000', 
+			'--req', 'pause: false'
+		],
+		output='screen'
+	)
+
 
 	# Bridge
 	bridge = Node(
@@ -109,7 +133,7 @@ def generate_launch_description():
 	use_sim_time_setter = SetParameter(name='use_sim_time', value=True)
 
 	px4_sim_model_env = SetEnvironmentVariable(
-		'PX4_SIM_MODEL', airframe_value
+		'PX4_SIM_MODEL', airframe
 	)
 	gz_standalone_env = SetEnvironmentVariable(
 		'PX4_GZ_STANDALONE', "1"
@@ -138,7 +162,7 @@ def generate_launch_description():
 	)
 
 	dds_cmd = ExecuteProcess(
-		cmd=['gnome-terminal', '--', "MicroXRCEAgent", "udp4", "-p", ddsport_value],
+		cmd=['gnome-terminal', '--', "MicroXRCEAgent", "udp4", "-p", ddsport],
 		cwd=os.getcwd(),
 		output='screen'
 	)
@@ -236,6 +260,7 @@ def generate_launch_description():
 	set_pose,
 	airframe_launch_arg,
 	ddsport_launch_arg,
+	gazebo_name_launch_arg,
 	gazebo_world_launch_arg,
 
 	px4_sim_model_env,
@@ -243,6 +268,7 @@ def generate_launch_description():
 	uxrce_dds_synct_env,
 	dds_cmd,
 	gz_sim,
+	sim_start,
 	bridge,
 	px4_sim_cmd,
 	QGC_cmd, 
@@ -254,7 +280,6 @@ def generate_launch_description():
 	visualizer_node,
 	rviz2_node, 
 	ground_truth_node, 
-
 	
 	]
 	)    

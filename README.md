@@ -10,6 +10,10 @@
 
 ## Launch simulation environment
 
+gz service -s /world/warehouse/control --reqtype gz.msgs.WorldControl --reptype gz.msgs.Boolean --timeout 3000 --req 'pause: false'
+data: true
+
+
 ```bash
 ros2 launch traj px4_sim.launch.py
 ```
