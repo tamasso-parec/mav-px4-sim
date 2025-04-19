@@ -93,12 +93,12 @@
           </image>
           <clip>
             <near>0.01</near>
-            <far>200</far>
+            <far>50</far>
           </clip>
           <depth_camera>
             <clip>
               <near>0.1</near>
-              <far>20</far>
+              <far>50</far>
             </clip>
           </depth_camera>
           <noise>

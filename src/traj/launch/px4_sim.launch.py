@@ -31,6 +31,7 @@ def generate_launch_description():
 	set_pose = SetEnvironmentVariable(
 		name='PX4_GZ_MODEL_POSE',
 		value='0 0 0 0 0 1.57'
+		# value='0 0 0 0 0 0'
 	)
 
 	airframe_launch_arg = DeclareLaunchArgument(

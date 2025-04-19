@@ -87,6 +87,8 @@ class OffboardTakeoff(Node):
 
         self.takeoff_completed = False
 
+        self.heading = 0.0
+
 
 
     def set_offboard_mode(self):
@@ -115,6 +117,8 @@ class OffboardTakeoff(Node):
             self.set_offboard_mode()
 
     def vehicle_local_position_callback(self, msg):
+
+        self.heading = msg.heading
         if msg.z <= -self.altitude:
             print("Takeoff completed")
             self.takeoff_completed = True
@@ -135,6 +139,7 @@ class OffboardTakeoff(Node):
                 trajectory_msg.position[0] = 0
                 trajectory_msg.position[1] = 0
                 trajectory_msg.position[2] = -self.altitude
+                trajectory_msg.yaw = self.heading
                 self.publisher_takeoff.publish(trajectory_msg)
             else: 
                 print("Waiting for vehicle to be armed and in offboard mode")

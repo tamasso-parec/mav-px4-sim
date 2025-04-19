@@ -81,6 +81,7 @@ class OffboardControl(Node):
         self.altitude = self.get_parameter('altitude').value
 
 
+
     def set_offboard_mode(self):
         msg = VehicleCommand()
         msg.param1 = 1.0
