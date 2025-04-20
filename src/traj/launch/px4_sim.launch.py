@@ -225,13 +225,6 @@ def generate_launch_description():
 		output='screen'
 	)
 	
-	# depth_camera_pointcloud_node = Node(
-	# 	package='tf2_ros',
-	# 	executable='static_transform_publisher',
-	# 	name='depth_camera_pointcloud_publisher',
-	# 	arguments=['0', '0', '0', '0', '0', '0', 'drone', 'x500_depth_0/OakD-Lite/base_link/StereoOV7251'],
-	# 	output='screen'
-	# )
 
 	visualizer_node = Node(
             package='traj',
@@ -253,7 +246,6 @@ def generate_launch_description():
 
 	return LaunchDescription(
 	[
-	# use_sim_time_setter,
 	# uxrce_dds_synct_env,
 	set_resource_path,
 	set_plugin_path,
