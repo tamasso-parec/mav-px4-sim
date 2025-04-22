@@ -10,8 +10,11 @@
 
 ## Launch simulation environment
 
+Starting the simulation environment with the drone model and the world:
+```bash
 gz service -s /world/warehouse/control --reqtype gz.msgs.WorldControl --reptype gz.msgs.Boolean --timeout 3000 --req 'pause: false'
 data: true
+```
 
 
 ```bash
@@ -34,4 +37,10 @@ ros2 run traj offboard_control
 
 ```bash
 ros2 run traj land_disarm
+```
+
+## Launch planner
+
+```bash
+ros2 run uncertain_planner drone_planner slam_map
 ```
