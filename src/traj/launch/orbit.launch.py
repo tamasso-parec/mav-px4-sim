@@ -50,6 +50,6 @@ def generate_launch_description():
             namespace='traj',
             executable='offboard_control',
             name='offboard_control',
-            parameters= [{'radius': 3.0},{'altitude': 3.5},{'omega': 0.8}]
+            parameters= [{'radius': 3.0},{'altitude': 2.5},{'omega': 0.2}]
         ),
     ])

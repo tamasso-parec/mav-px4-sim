@@ -105,9 +105,9 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /px4_visualizer/vehicle_path
       Value: true
-    - Alpha: 1
+    - Class: rviz_default_plugins/Path
+      Alpha: 1
       Buffer Length: 1
-      Class: rviz_default_plugins/Path
       Color: 25; 0; 255
       Enabled: true
       Head Diameter: 0.30000001192092896
@@ -132,6 +132,103 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /px4_visualizer/setpoint_path
       Value: true
+    - Class: rviz_default_plugins/Path
+      Alpha: 1
+      Buffer Length: 1
+      Color: 97; 53; 131
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: Axes
+      Length: 0.3
+      Radius: 0.03
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /drone_path
+      Value: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        # base_link:
+        #   Value: true
+        # camera_accel_frame:
+        #   Value: true
+        # camera_accel_optical_frame:
+        #   Value: true
+        # camera_bottom_screw_frame:
+        #   Value: true
+        # camera_color_frame:
+        #   Value: true
+        # camera_color_optical_frame:
+        #   Value: true
+        # camera_depth_frame:
+        #   Value: true
+        # camera_depth_optical_frame:
+        #   Value: true
+        # camera_gyro_frame:
+        #   Value: true
+        # camera_gyro_optical_frame:
+        #   Value: true
+        # camera_imu_optical_frame:
+        #   Value: true
+        # camera_infra1_frame:
+        #   Value: true
+        # camera_infra1_optical_frame:
+        #   Value: true
+        # camera_infra2_frame:
+        #   Value: true
+        # camera_infra2_optical_frame:
+        #   Value: true
+        # camera_link:
+        #   Value: true
+        # camera_usb_plug_link:
+        #   Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      # Tree:
+      #   base_link:
+      #     camera_bottom_screw_frame:
+      #       camera_link:
+      #         camera_accel_frame:
+      #           camera_accel_optical_frame:
+      #             {}
+      #         camera_color_frame:
+      #           camera_color_optical_frame:
+      #             {}
+      #         camera_depth_frame:
+      #           camera_depth_optical_frame:
+      #             {}
+      #         camera_gyro_frame:
+      #           camera_gyro_optical_frame:
+      #             camera_imu_optical_frame:
+      #               {}
+      #         camera_infra1_frame:
+      #           camera_infra1_optical_frame:
+      #             {}
+      #         camera_infra2_frame:
+      #           camera_infra2_optical_frame:
+      #             {}
+      #         camera_usb_plug_link:
+      #           {}
+      Update Interval: 0
+      Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
       Name: Camera Image
@@ -141,6 +238,22 @@ Visualization Manager:
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /x500_realsense/image_raw
+      Value: true
+    - Class: octomap_rviz_plugins/OccupancyGrid
+      Enabled: true
+      Name: Uncertain Octomap
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /octomap_full
+      Voxel Rendering: Occupied Voxels
+      Voxel Coloring: Cell Probability
+      Voxel Alpha: 1
+      Max. Octree Depth: 16
+      Max. Height Display: inf
+      Min. Height Display: -inf
       Value: true
     - Class: rviz_default_plugins/Image
       Enabled: true
