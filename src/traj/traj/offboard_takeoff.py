@@ -89,6 +89,23 @@ class OffboardTakeoff(Node):
 
         self.heading = 0.0
 
+    def arm(self):
+        self.publish_vehicle_command(VehicleCommand.VEHICLE_CMD_COMPONENT_ARM_DISARM, 1.0)
+        self.get_logger().info("Arm command sent")
+
+    def publish_vehicle_command(self, command, param1=0.0, param2=0.0, param7=0.0):
+        msg = VehicleCommand()
+        msg.param1 = param1
+        msg.param2 = param2
+        msg.param7 = param7    # altitude value in takeoff command
+        msg.command = command  # command ID
+        msg.target_system = 1  # system which should execute the command
+        msg.target_component = 1  # component which should execute the command, 0 for all components
+        msg.source_system = 1  # system sending the command
+        msg.source_component = 1  # component sending the command
+        msg.from_external = True
+        msg.timestamp = int(Clock().now().nanoseconds / 1000) # time in microseconds
+        self.vehicle_command_publisher_.publish(msg)
 
 
     def set_offboard_mode(self):
@@ -111,6 +128,9 @@ class OffboardTakeoff(Node):
         print("  - offboard status: ", VehicleStatus.NAVIGATION_STATE_OFFBOARD)
         self.nav_state = msg.nav_state
         self.arming_state = msg.arming_state
+
+        if self.arming_state != VehicleStatus.ARMING_STATE_ARMED:
+            self.arm()
 
         if msg.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER or msg.nav_state == VehicleStatus.NAVIGATION_STATE_POSCTL:
             print("NAV_STATE: OFFBOARD")
