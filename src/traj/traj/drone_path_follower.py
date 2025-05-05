@@ -84,17 +84,10 @@ class DronePathFollower(Node):
         timer_period = 0.02  # seconds
         self.timer = self.create_timer(timer_period, self.cmdloop_callback)
         self.dt = timer_period
-        self.declare_parameter('radius', 0.0)
-        self.declare_parameter('omega', 0.0)
-        self.declare_parameter('altitude', 1.0)
+        
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arming_state = VehicleStatus.ARMING_STATE_DISARMED
-        # Note: no parameter callbacks are used to prevent sudden inflight changes of radii and omega 
-        # which would result in large discontinuities in setpoints
-        self.theta = 0.0
-        self.radius = self.get_parameter('radius').value
-        self.omega = self.get_parameter('omega').value
-        self.altitude = self.get_parameter('altitude').value
+        
 
     def set_hold_mode(self):
         msg = VehicleCommand()
@@ -142,6 +135,7 @@ class DronePathFollower(Node):
         self.get_logger().info("Path Received")
 
     def cmdloop_callback(self):
+
         # Publish offboard control modes
         if self.publish_setpoints_flag:
 
@@ -161,11 +155,19 @@ class DronePathFollower(Node):
                 # 2- Check if the segment index is valid
                 if self.index < len(self.path.poses)-1:
 
+
+                    
                     # 3- Check if the time elapsed is greater than the time of the segment
-                    if elapsed_time > self.path.poses[self.index+1].header.stamp.sec + self.path.poses[self.index+1].header.stamp.nanosec / 1e9 and self.index < len(self.path.poses)-2:
+                    if elapsed_time > self.path.poses[self.index+1].header.stamp.sec + self.path.poses[self.index+1].header.stamp.nanosec / 1e9:
+                        
                         # 4- Increment the index
                         self.index += 1
+
+                        if self.index == len(self.path.poses)-1:
+                            return
                     
+                    
+
                     # 5- select the two setpoints at the end of the current segment
                     setpoint_i = self.path.poses[self.index]
                     setpoint_f = self.path.poses[self.index + 1]

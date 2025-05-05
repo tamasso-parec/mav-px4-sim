@@ -81,6 +81,7 @@ class OffboardTakeoff(Node):
         self.declare_parameter('altitude', 2.0)
         self.nav_state = VehicleStatus.NAVIGATION_STATE_MAX
         self.arming_state = VehicleStatus.ARMING_STATE_DISARMED
+        
         # Note: no parameter callbacks are used to prevent sudden inflight changes of radii and omega 
         # which would result in large discontinuities in setpoints
         self.altitude = self.get_parameter('altitude').value
