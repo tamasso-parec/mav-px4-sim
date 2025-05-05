@@ -96,7 +96,19 @@ class DronePathFollower(Node):
         self.omega = self.get_parameter('omega').value
         self.altitude = self.get_parameter('altitude').value
 
-
+    def set_hold_mode(self):
+        msg = VehicleCommand()
+        msg.param1 = 1.0
+        msg.param2 = 6.0
+        msg.param7 = 0.0
+        msg.command = VehicleCommand.VEHICLE_CMD_DO_SET_MODE
+        msg.target_system = 1  # system which should execute the command
+        msg.target_component = 1  # component which should execute the command, 0 for all components
+        msg.source_system = 1  # system sending the command
+        msg.source_component = 1  # component sending the command
+        msg.from_external = True
+        msg.timestamp = int(Clock().now().nanoseconds / 1000) # time in microseconds
+        self.vehicle_command_publisher_.publish(msg)
 
     def set_offboard_mode(self):
         msg = VehicleCommand()
@@ -114,13 +126,13 @@ class DronePathFollower(Node):
         
     def vehicle_status_callback(self, msg):
         # TODO: handle NED->ENU transformation
-        print("NAV_STATUS: ", msg.nav_state)
-        print("  - offboard status: ", VehicleStatus.NAVIGATION_STATE_OFFBOARD)
+        # print("NAV_STATUS: ", msg.nav_state)
+        # print("  - offboard status: ", VehicleStatus.NAVIGATION_STATE_OFFBOARD)
         self.nav_state = msg.nav_state
         self.arming_state = msg.arming_state
 
-        if msg.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER:
-            print("NAV_STATE: OFFBOARD")
+        if msg.nav_state == VehicleStatus.NAVIGATION_STATE_AUTO_LOITER and self.publish_setpoints_flag:
+            # print("NAV_STATE: OFFBOARD")
             self.set_offboard_mode()
 
     def path_callback(self, msg):
@@ -150,7 +162,7 @@ class DronePathFollower(Node):
                 if self.index < len(self.path.poses)-1:
 
                     # 3- Check if the time elapsed is greater than the time of the segment
-                    if elapsed_time > self.path.poses[self.index].header.stamp.sec + self.path.poses[self.index].header.stamp.nanosec / 1e9:
+                    if elapsed_time > self.path.poses[self.index+1].header.stamp.sec + self.path.poses[self.index+1].header.stamp.nanosec / 1e9 and self.index < len(self.path.poses)-2:
                         # 4- Increment the index
                         self.index += 1
                     
@@ -199,6 +211,7 @@ class DronePathFollower(Node):
                     # 2B- Stop publishing setpoints
                     self.publish_setpoints_flag = False
                     self.index = 0
+                    self.get_logger().info("Path Completed")
 
 
 
