@@ -39,6 +39,8 @@ from rclpy.node import Node
 from rclpy.clock import Clock
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDurabilityPolicy
 
+from tf_transformations import euler_from_quaternion
+
 from px4_msgs.msg import OffboardControlMode
 from px4_msgs.msg import TrajectorySetpoint
 from px4_msgs.msg import VehicleStatus
@@ -68,9 +70,16 @@ class DronePathFollower(Node):
         self.publisher_offboard_mode = self.create_publisher(OffboardControlMode, '/fmu/in/offboard_control_mode', qos_profile)
         self.publisher_trajectory = self.create_publisher(TrajectorySetpoint, '/fmu/in/trajectory_setpoint', qos_profile)
 
-        self.path_dubscriber = self.create_subscription(Path, '/drone_path', self.path_callback, qos_profile)
+        # PATH MANAGER
+        self.path_subscriber = self.create_subscription(Path, '/drone_path', self.path_callback, qos_profile)
 
         self.path = Path()
+
+        self.publish_setpoints_flag = False
+
+        self.path_start_time = self.get_clock().now().nanoseconds
+
+        self.index = 0
 
         timer_period = 0.02  # seconds
         self.timer = self.create_timer(timer_period, self.cmdloop_callback)
@@ -116,25 +125,81 @@ class DronePathFollower(Node):
 
     def path_callback(self, msg):
         self.path = msg
+        self.path_start_time = self.get_clock().now().nanoseconds
+        self.publish_setpoints_flag = True
         self.get_logger().info("Path Received")
 
     def cmdloop_callback(self):
         # Publish offboard control modes
-        offboard_msg = OffboardControlMode()
-        offboard_msg.timestamp = int(Clock().now().nanoseconds / 1000)
-        offboard_msg.position=True
-        offboard_msg.velocity=False
-        offboard_msg.acceleration=False
-        self.publisher_offboard_mode.publish(offboard_msg)
-        if (self.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD and self.arming_state == VehicleStatus.ARMING_STATE_ARMED):
+        if self.publish_setpoints_flag:
 
-            trajectory_msg = TrajectorySetpoint()
-            trajectory_msg.position[0] = self.radius * np.cos(self.theta)
-            trajectory_msg.position[1] = self.radius * np.sin(self.theta)
-            trajectory_msg.position[2] = -self.altitude
-            self.publisher_trajectory.publish(trajectory_msg)
+            offboard_msg = OffboardControlMode()
+            offboard_msg.timestamp = int(Clock().now().nanoseconds / 1000)
+            offboard_msg.position=True
+            offboard_msg.velocity=False
+            offboard_msg.acceleration=False
+            self.publisher_offboard_mode.publish(offboard_msg)
 
-            self.theta = self.theta + self.omega * self.dt
+                
+            if (self.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD and self.arming_state == VehicleStatus.ARMING_STATE_ARMED):
+
+                # 1- Check time elapsed since path start in seconds
+                elapsed_time = (self.get_clock().now().nanoseconds - self.path_start_time) / 1e9
+
+                # 2- Check if the segment index is valid
+                if self.index < len(self.path.poses)-1:
+
+                    # 3- Check if the time elapsed is greater than the time of the segment
+                    if elapsed_time > self.path.poses[self.index].header.stamp.sec + self.path.poses[self.index].header.stamp.nanosec / 1e9:
+                        # 4- Increment the index
+                        self.index += 1
+                    
+                    # 5- select the two setpoints at the end of the current segment
+                    setpoint_i = self.path.poses[self.index]
+                    setpoint_f = self.path.poses[self.index + 1]
+
+                    t_i = setpoint_i.header.stamp.sec + setpoint_i.header.stamp.nanosec / 1e9
+                    t_f = setpoint_f.header.stamp.sec + setpoint_f.header.stamp.nanosec / 1e9
+
+                    # 6 - Compute the time elapsed in the current segment
+                    current_segement_time = elapsed_time - (setpoint_i.header.stamp.sec + setpoint_i.header.stamp.nanosec / 1e9)
+
+                    # 7- Compute a linear interpolation between the two setpoints
+                    x = (setpoint_f.pose.position.x - setpoint_i.pose.position.x) / (t_f - t_i) * current_segement_time + setpoint_i.pose.position.x
+                    y = (setpoint_f.pose.position.y - setpoint_i.pose.position.y) / (t_f - t_i) * current_segement_time + setpoint_i.pose.position.y
+                    z = (setpoint_f.pose.position.z - setpoint_i.pose.position.z) / (t_f - t_i) * current_segement_time + setpoint_i.pose.position.z
+
+                    _, pitch_i, _= euler_from_quaternion([  setpoint_i.pose.orientation.x,
+                                                            setpoint_i.pose.orientation.y,
+                                                            setpoint_i.pose.orientation.z,
+                                                            setpoint_i.pose.orientation.w])
+                    
+                    _, pitch_f, _= euler_from_quaternion([  setpoint_f.pose.orientation.x,
+                                                            setpoint_f.pose.orientation.y,
+                                                            setpoint_f.pose.orientation.z,
+                                                            setpoint_f.pose.orientation.w])
+
+                    # Pitch in camera frame is yaw in NED frame
+
+                    # 8- Compute a linear interpolation between the pitch angles
+                    pitch = (pitch_f - pitch_i) / (t_f - t_i) * current_segement_time + pitch_i
+
+
+                    # 9- Handle the conversion from Camera to NED frame
+                    trajectory_msg = TrajectorySetpoint()
+                    trajectory_msg.position[0] = z
+                    trajectory_msg.position[1] = x
+                    trajectory_msg.position[2] = y
+                    trajectory_msg.yaw = pitch
+
+                    self.publisher_trajectory.publish(trajectory_msg)
+
+
+                else:
+                    # 2B- Stop publishing setpoints
+                    self.publish_setpoints_flag = False
+                    self.index = 0
+
 
 
 def main(args=None):
