@@ -24,7 +24,7 @@ ros2 launch traj px4_sim.launch.py
 ## Takeoff
 
 ```bash
-ros2 run traj offboard_takeoff --ros-args -p  altitude:=4
+ros2 run traj offboard_takeoff --ros-args -p  altitude:=4.0
 ```
 
 ## OFFBOARD MODE
