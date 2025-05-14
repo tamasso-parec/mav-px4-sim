@@ -29,10 +29,10 @@ def generate_launch_description():
 	)
 
 	gazebo_world_launch_arg = DeclareLaunchArgument(
-		'gz_world_file', default_value='depot.sdf'
+		'gz_world_file', default_value='default_custom.sdf'
 	)
 	gazebo_name_launch_arg = DeclareLaunchArgument(
-		'gz_world', default_value='depot'
+		'gz_world', default_value='default_custom'
 	)
   
 	ddsport_launch_arg = DeclareLaunchArgument(
@@ -99,10 +99,10 @@ def generate_launch_description():
 	sim_start = ExecuteProcess(
 		cmd=[
 			'gz', 'service', '-s', 
-			'/world/depot/control',  
+			'/world/default_custom/control',  
 			'--reqtype', 'gz.msgs.WorldControl', 
 			'--reptype', 'gz.msgs.Boolean', 
-			'--timeout', '10000', 
+			'--timeout', '1000', 
 			'--req', 'pause: false'
 		],
 		output='screen'
