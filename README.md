@@ -1,5 +1,33 @@
 # PX4 ROS2
 
+## Launch demo
+
+### Build
+```bash
+source /opt/ros/<ROS_DISTRO>/setup.bash
+
+colcon build
+
+colcon build --symlink-install --packages-select orbslam3
+
+source install/local_setup.bash
+```
+
+### Launch 
+
+#### Terminal 1
+```bash
+ros2 launch uncertain_planner drone_planner.launch.py
+```
+#### Terminal 2
+```bash
+ros2 run traj offboard_takeoff --ros-args -p altitude:=4.0
+```
+#### Terminal 3
+```bash
+ros2 launch traj sim_demo.launch.py
+```
+
 ## Adding models to PX4 
 
 - Add an entry with a suitable number and name in [`~/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes`](../../../PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/airframes/)

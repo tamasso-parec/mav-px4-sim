@@ -86,6 +86,10 @@ class OffboardTakeoff(Node):
         # which would result in large discontinuities in setpoints
         self.altitude = self.get_parameter('altitude').value
 
+        self.takeoff_speed = 0.2 # m/s
+        self.takeoff_duration = self.altitude /self.takeoff_speed #seconds
+        self.takeoff_start_time = self.get_clock().now().nanoseconds
+
         self.takeoff_completed = False
 
         self.heading = 0.0
@@ -155,16 +159,21 @@ class OffboardTakeoff(Node):
 
         if not self.takeoff_completed:
             if (self.nav_state == VehicleStatus.NAVIGATION_STATE_OFFBOARD and self.arming_state == VehicleStatus.ARMING_STATE_ARMED):
+                delta_t = (self.get_clock().now().nanoseconds - self.takeoff_start_time) / 1e9
 
                 trajectory_msg = TrajectorySetpoint()
                 trajectory_msg.position[0] = 0
                 trajectory_msg.position[1] = 0
-                trajectory_msg.position[2] = -self.altitude
+                trajectory_msg.position[2] = -(self.altitude - self.takeoff_speed * (self.takeoff_duration-delta_t))
+                trajectory_msg.velocity[0] = 0
+                trajectory_msg.velocity[1] = 0
+                trajectory_msg.velocity[2] = -self.takeoff_speed
                 trajectory_msg.yaw = self.heading
                 self.publisher_takeoff.publish(trajectory_msg)
             else: 
                 print("Waiting for vehicle to be armed and in offboard mode")
                 self.takeoff_completed = False
+                self.takeoff_start_time = self.get_clock().now().nanoseconds
         else:
             print("Takeoff completed, stopping node")
             sys.exit()
